@@ -90,28 +90,23 @@ function mostrarRecetas(recetas) {
 
 async function verDetalles(receta) {
     ultimaReceta = receta;
-    idiomaActual = "es";
+    idiomaActual = "en";
 
     document.getElementById("modalTitulo").textContent = receta.strMeal;
 
     ingredientesEN = "";
-    ingredientesES = "";
-
-    let ingredientesTextoEN = "";
+    instruccionesEN = receta.strInstructions;
 
     for (let i = 1; i <= 20; i++) {
         const ing = receta[`strIngredient${i}`];
         const medida = receta[`strMeasure${i}`];
-
-        if (ing && ing.trim()) {
+        if (ing) {
             ingredientesEN += `<li>${ing} - ${medida}</li>`;
         }
     }
 
-    instruccionesEN = receta.strInstructions;
-
-    ingredientesES = `<li><em>Ingredientes en español (prueba)</em></li>` + ingredientesEN;
-    instruccionesES = `<em>Preparación en español (prueba)</em><br>` + instruccionesEN;
+    ingredientesES = "";
+    instruccionesES = "";
 
     renderContenidoModal(receta);
 
@@ -175,6 +170,9 @@ function obtenerPais(receta) {
 }
 
 async function traducirTextoAPI(texto, origen = "en", destino = "es") {
+
+    console.log("Traduciendo:", texto);
+
     const res = await fetch("https://libretranslate.de/translate", {
         method: "POST",
         headers: {
@@ -186,8 +184,14 @@ async function traducirTextoAPI(texto, origen = "en", destino = "es") {
             target: destino,
             format: "text"
         })
-    })
+    });
+
+    console.log("Traduciendo:", texto);
+
     const data = await res.json();
+
+    console.log("Respuesta API:", data);
+
     return data.translatedText;
 }
 
@@ -204,17 +208,30 @@ function renderContenidoModal(receta) {
             <button class="btn btn-sm btn-outline-success" onclick="cambiarIdioma('es')">Español</button>
         </div>
 
-        <h6>Ingredientes</h6>
-        <ul>${idiomaActual === "en" ? ingredientesEN : ingredientesES}</ul>
+        <h6>Ingredients</h6>
+        <ul class="ps-3">
+            ${idiomaActual === "en" ? ingredientesEN : ingredientesES || "En construcción..."}
+        </ul>
 
-        <h6>Preparación</h6>
-        <p>${idiomaActual === "en" ? instruccionesEN : instruccionesES}</p>
+        <h6>Preparation</h6>
+        <ul class="ps-3">
+            ${formatearInstrucciones(idiomaActual === "en" ? instruccionesEN : instruccionesES || "En construcción...")}
+        </ul>
     `;
 }
 
 function cambiarIdioma(idioma) {
     idiomaActual = idioma;
     renderContenidoModal(ultimaReceta);
+}
+
+function formatearInstrucciones(texto) {
+    return texto
+        .split(".")
+        .map(paso => paso.trim())
+        .filter(paso => paso.length > 5)
+        .map(paso => `<li>${paso}.</li>`)
+        .join("");
 }
 
 document.addEventListener("DOMContentLoaded", crearAlfabeto);
