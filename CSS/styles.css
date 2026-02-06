@@ -1,0 +1,64 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.modal-content {
+    align-items: center;
+    justify-content: center;
+}
+
+img {
+    width: 30%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+}
+
+h6 {
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+#alfabeto {
+    padding: 20px;
+}
+
+.card-img {
+    height: 250px;
+    object-fit: cover;
+}
+
+.card {
+    transition: transform .2s;
+}
+
+.card:hover {
+    transform: scale(1.03);
+}
+
+.form-control {
+    width: 50px;
+}
+
+.input-group {
+    width: 50px;
+}
+
+.container {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+#searchInput {
+    width: 50px;
+}
+
+.bg-secondary {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
