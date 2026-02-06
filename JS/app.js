@@ -31,6 +31,13 @@ const mapaPaises = {
     Vietnamese: "vn"
 };
 
+let idiomaActual = "es";
+let ingredientesEN = "";
+let ingredientesES = "";
+let instruccionesEN = "";
+let instruccionesES = "";
+let ultimaReceta = null;
+
 
 if (btnBuscar) {
     btnBuscar.addEventListener("click", buscarRecetas);
@@ -68,7 +75,7 @@ function mostrarRecetas(recetas) {
                 <img src="${receta.strMealThumb}" class="card-img-top">
                 <div class="card-body text-center">
                     <h6>${receta.strMeal}</h6>
-                    <button class="btn btn-sm btn-outline-primary mt-2">Ver detalles</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-2">Ver detalles</button>
                 </div>
             </div>
         `;
@@ -81,27 +88,32 @@ function mostrarRecetas(recetas) {
     });
 }
 
-function verDetalles(receta) {
+async function verDetalles(receta) {
+    ultimaReceta = receta;
+    idiomaActual = "es";
+
     document.getElementById("modalTitulo").textContent = receta.strMeal;
 
-    let ingredientes = "";
+    ingredientesEN = "";
+    ingredientesES = "";
+
+    let ingredientesTextoEN = "";
+
     for (let i = 1; i <= 20; i++) {
-        if (receta[`strIngredient${i}`]) {
-            ingredientes += `<li>${receta[`strIngredient${i}`]} - ${receta[`strMeasure${i}`]}</li>`
+        const ing = receta[`strIngredient${i}`];
+        const medida = receta[`strMeasure${i}`];
+
+        if (ing && ing.trim()) {
+            ingredientesEN += `<li>${ing} - ${medida}</li>`;
         }
     }
 
-    const paisHTML = obtenerPais(receta);
+    instruccionesEN = receta.strInstructions;
 
-    document.getElementById("modalBody").innerHTML = `
-        <img src="${receta.strMealThumb}" class="img-fluid mb-3 d-block mx-auto"> 
-        ${paisHTML}      
-        <h6>Ingredientes</h6>
-        <ul>${ingredientes}</ul>
-        <h6>Preparación</h6>
-        <p>${receta.strInstructions}</p>
-        
-    `;
+    ingredientesES = `<li><em>Ingredientes en español (prueba)</em></li>` + ingredientesEN;
+    instruccionesES = `<em>Preparación en español (prueba)</em><br>` + instruccionesEN;
+
+    renderContenidoModal(receta);
 
     new bootstrap.Modal(document.getElementById("modalReceta")).show();
 }
@@ -147,7 +159,7 @@ function obtenerPais(receta) {
         return `
             <div class="text-center mb-3">
             <span class="badge bg-secondary">Origen desconocido</span>
-            <div class="text-center mb-3">
+            </div>
         `;
     }
     return `
@@ -160,6 +172,49 @@ function obtenerPais(receta) {
             <span class="fw-semibold">${area}</span>
         </div>
     `;
+}
+
+async function traducirTextoAPI(texto, origen = "en", destino = "es") {
+    const res = await fetch("https://libretranslate.de/translate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            q: texto,
+            source: origen,
+            target: destino,
+            format: "text"
+        })
+    })
+    const data = await res.json();
+    return data.translatedText;
+}
+
+function renderContenidoModal(receta) {
+    const paisHTML = obtenerPais(receta);
+
+    document.getElementById("modalBody").innerHTML = `
+        <img src="${receta.strMealThumb}" class="img-fluid mb-3 d-block mx-auto">
+
+        ${paisHTML}
+
+        <div class="text-center mb-3">
+            <button class="btn btn-sm btn-outline-primary me-2" onclick="cambiarIdioma('en')">English</button>
+            <button class="btn btn-sm btn-outline-success" onclick="cambiarIdioma('es')">Español</button>
+        </div>
+
+        <h6>Ingredientes</h6>
+        <ul>${idiomaActual === "en" ? ingredientesEN : ingredientesES}</ul>
+
+        <h6>Preparación</h6>
+        <p>${idiomaActual === "en" ? instruccionesEN : instruccionesES}</p>
+    `;
+}
+
+function cambiarIdioma(idioma) {
+    idiomaActual = idioma;
+    renderContenidoModal(ultimaReceta);
 }
 
 document.addEventListener("DOMContentLoaded", crearAlfabeto);
